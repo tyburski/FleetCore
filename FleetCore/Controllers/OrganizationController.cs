@@ -18,7 +18,7 @@ namespace FleetCore.Controllers
         public ActionResult Create([FromBody] CreateOrganizationModel model)
         {
             var result = _organizationService.Create(model);
-            if (result.Result is false) return NoContent();
+            if (result is false) return NoContent();
             else return Ok();
         }
         [HttpGet]

@@ -44,7 +44,7 @@ namespace FleetCore.Services
         public IEnumerable<Vehicle> GetAll()
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = _dbContext.Users.Include(x => x.Organization).FirstOrDefault(x => x.Id == userId);
+            var user = _dbContext.Users.Include(x => x.Organization).FirstOrDefault(x => x.Id.Equals(userId));
 
             var vehicles = _dbContext
                 .Vehicles
@@ -58,7 +58,7 @@ namespace FleetCore.Services
         public int Create(CreateVehicleModel model)
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = _dbContext.Users.Include(x=>x.Organization).FirstOrDefault(x=>x.Id == userId);
+            var user = _dbContext.Users.Include(x=>x.Organization).FirstOrDefault(x=>x.Id.Equals(userId));
 
             Vehicle vehicle = new Vehicle()
             {
@@ -118,7 +118,7 @@ namespace FleetCore.Services
         public int CreateRepair(int id, CreateRepairModel model)
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = _dbContext.Users.Include(x => x.Organization).FirstOrDefault(x => x.Id == userId);
+            var user = _dbContext.Users.Include(x => x.Organization).FirstOrDefault(x => x.Id.Equals(userId));
 
             var vehicle = _dbContext
                 .Vehicles
@@ -140,7 +140,7 @@ namespace FleetCore.Services
         public int CreateRefueling(CreateRefuelingModel model)
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = _dbContext.Users.Include(x => x.Organization).FirstOrDefault(x => x.Id == userId);
+            var user = _dbContext.Users.Include(x => x.Organization).FirstOrDefault(x => x.Id.Equals(userId));
 
             var vehicle = _dbContext
                 .Vehicles

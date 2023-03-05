@@ -8,7 +8,7 @@ namespace FleetCore.Services
 {
     public interface IOrganizationService
     {
-        Task<bool> Create(CreateOrganizationModel model);
+        bool Create(CreateOrganizationModel model);
         IEnumerable<Organization> GetAll();
         IEnumerable<Organization> GetByName(string search);
         Organization GetById(string id);
@@ -18,23 +18,21 @@ namespace FleetCore.Services
     public class OrganizationService : IOrganizationService
     {
         private readonly FleetCoreDbContext _dbContext;
-        private readonly UserManager<AppUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public OrganizationService(FleetCoreDbContext dbContext, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager)
+        public OrganizationService(FleetCoreDbContext dbContext)
         {
             _dbContext = dbContext;
-            _userManager = userManager;
-            _roleManager = roleManager;
         }
 
-        public async Task<bool> Create(CreateOrganizationModel model)
+        public bool Create(CreateOrganizationModel model)
         {
             string username = ($"{model.FirstName.Substring(0, 1)}{model.LastName}").ToLower();
             var orgDbCheck = _dbContext
                 .Organizations
                 .FirstOrDefault(x => x.Name == model.Name);
-            var userDbCheck = await _userManager.FindByNameAsync(username);
+            var userDbCheck = _dbContext
+                .Users
+                .FirstOrDefault(x => x.UserName.Equals(username));
 
             bool createSuccess = false;
             if (userDbCheck is null && orgDbCheck is null)
@@ -44,20 +42,19 @@ namespace FleetCore.Services
                     Name = model.Name,
                     OrganizationPassword = model.OrganizationPassword
                 };
+                _dbContext.Organizations.Add(organization);
                 var user = new AppUser
                 {
                     UserName = username,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     FullName = $"{model.FirstName} {model.LastName}",
-                    Organization = organization
+                    Organization = organization,
+                    Password = organization.OrganizationPassword,
+                    Role = "Owner"
                 };
-                await _userManager.CreateAsync(user, organization.OrganizationPassword);
-
-                await _userManager.AddClaimAsync(user, new Claim("FullName", user.FullName));
-
-                var role = _roleManager.FindByNameAsync(model.Role).Result;
-                await _userManager.AddToRoleAsync(user, role.Name);
+                _dbContext.Users.Add(user);
+                _dbContext.SaveChanges();
 
                 createSuccess = true;
             }

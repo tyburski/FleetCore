@@ -5,8 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FleetCore
 {
-    public class FleetCoreDbContext : IdentityDbContext<AppUser>
+    public class FleetCoreDbContext : DbContext
     {
+        public DbSet<AppUser> Users { get; set; }
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<Bonus> Bonuses { get; set; }

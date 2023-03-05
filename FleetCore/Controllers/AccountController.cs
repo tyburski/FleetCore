@@ -10,10 +10,12 @@ namespace FleetCore.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
+        private readonly IJWTManager _jWTManager;
 
-        public AccountController(IAccountService accountService) 
+        public AccountController(IAccountService accountService, IJWTManager jWTManager) 
         {
             _accountService = accountService;
+            _jWTManager = jWTManager;
         }
         [HttpPost("create")]
         public ActionResult Create([FromBody]CreateUserModel model)
@@ -29,18 +31,12 @@ namespace FleetCore.Controllers
         [HttpPost("login")]
         public ActionResult Login([FromBody]LoginModel model)
         {
-            var result = _accountService.Login(model);
-            if (result.Result is false)
+            var result = _jWTManager.Authenticate(model);
+            if (result is null)
             {
-                return BadRequest();
+                return Unauthorized();
             }
-            return Ok();
-        }
-        [HttpPost("logout")]
-        public ActionResult Logout()
-        {
-            _accountService.Logout();
-            return Ok();
+            return Ok(result);
         }
     }
 }

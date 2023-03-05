@@ -23,7 +23,7 @@ namespace FleetCore.Services
         public int Create(CreateNoticeModel model)
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = _dbContext.Users.Include(x => x.Organization).FirstOrDefault(x => x.Id == userId);
+            var user = _dbContext.Users.Include(x => x.Organization).FirstOrDefault(x => x.Id.Equals(userId));
 
             var notice = new Notice()
             {

@@ -1,15 +1,36 @@
 using FleetCore;
 using FleetCore.Models;
 using FleetCore.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<FleetCoreDbContext>();
-builder.Services.AddIdentity<AppUser, IdentityRole>()
-                .AddEntityFrameworkStores<FleetCoreDbContext>()
-                .AddDefaultTokenProviders();
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(o =>
+{
+    var Key = Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]);
+    o.SaveToken = true;
+    o.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JWT:Issuer"],
+        ValidAudience = builder.Configuration["JWT:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Key)
+    };
+});
+
+builder.Services.AddScoped<IJWTManager, JWTManager>();
 
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -45,5 +66,4 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-DataSeeder.Initialize(app);
 app.Run();
