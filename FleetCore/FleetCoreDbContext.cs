@@ -14,6 +14,7 @@ namespace FleetCore
         public DbSet<Event> Events { get; set; }
         public DbSet<Refueling> Refuelings { get; set; }
         public DbSet<Repair> Repairs { get; set; }
+        public DbSet<Log> Logs { get; set; }
 
         private string _connectionString =
             "Server=(localdb)\\mssqllocaldb;Database=FleetCoreDb;Trusted_Connection=True;";

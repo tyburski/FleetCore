@@ -13,8 +13,8 @@ namespace FleetCore.Services
         Vehicle GetByPlate(string plate);
         IEnumerable<Vehicle> GetAll();
         Task<bool> Create(CreateVehicleModel model);
-        int Update(int id, UpdateVehicleModel model);
-        bool Delete(int id);
+        bool Update(UpdateVehicleModel model);
+        bool Delete(string plate);
         Task<bool> CreateRepair(CreateRepairModel model);
         Task<bool> FinishRepair(FinishRepairModel model);
         Task<bool> CreateRefueling(CreateRefuelingModel model);
@@ -31,6 +31,7 @@ namespace FleetCore.Services
             _dbContext = dbContext;
             _httpContextAccessor = httpContextAccessor;
         }
+
         public Vehicle GetByPlate(string plate)
         {
             var vehicle = _dbContext
@@ -51,6 +52,7 @@ namespace FleetCore.Services
             var vehicles = _dbContext
                 .Vehicles
                 .Include(x => x.Events)
+                .Include(x=>x.Repairs).ThenInclude(x=>x.UserFinished)
                 .ToList();
             if (vehicles is null) return Enumerable.Empty<Vehicle>();
             return vehicles;
@@ -60,9 +62,9 @@ namespace FleetCore.Services
             if (_dbContext.Vehicles.FirstOrDefault(x => x.Plate == model.Plate) is not null) return false;
             Vehicle vehicle = new Vehicle()
             {
-                Plate = model.Plate,
+                Plate = model.Plate.ToUpper(),
                 Mileage = model.Mileage,
-                VIN = model.VIN,
+                VIN = model.VIN.ToUpper(),
             };
             _dbContext.Vehicles.Add(vehicle);
 
@@ -99,24 +101,29 @@ namespace FleetCore.Services
             _dbContext.SaveChanges();
             return true;
         }    
-        public int Update(int id, UpdateVehicleModel model)
+
+        public bool Update(UpdateVehicleModel model)
         {
             var vehicle = _dbContext
                 .Vehicles
-                .FirstOrDefault(x => x.Id == id);
-            
-            vehicle.Plate = model.Plate;
-            vehicle.Mileage = model.Mileage;
-            vehicle.VIN = model.VIN;
+                .FirstOrDefault(x => x.Plate.Equals(model.Plate));
+            if (vehicle is null) return false;
+
+            var checkPlate = _dbContext
+                .Vehicles
+                .FirstOrDefault(x => x.Plate.Equals(model.newPlate));
+            if (checkPlate is not null) return false;
+
+            vehicle.Plate = model.newPlate;
 
             _dbContext.SaveChanges();
-            return vehicle.Id;
+            return true;
         }
-        public bool Delete(int id)
+        public bool Delete(string plate)
         {
             var vehicle = _dbContext
                 .Vehicles
-                .FirstOrDefault(x => x.Id == id);
+                .FirstOrDefault(x => x.Plate.Equals(plate));
             if (vehicle is null) return false;
 
             _dbContext.Vehicles.Remove(vehicle);
@@ -140,8 +147,15 @@ namespace FleetCore.Services
                 CreatedAt = DateTime.Now,
                 FinishAt = DateTime.Now
             };
+           _dbContext.Repairs.Add(repair);
 
-            _dbContext.Repairs.Add(repair);
+            var log = new Log()
+            {
+                Content = $"[{user.FullName}] dodał naprawę [{repair.Content}] do pojazdu [{repair.Vehicle.Plate}]",
+                Date=repair.CreatedAt
+            };
+            _dbContext.Logs.Add(log);
+
             _dbContext.SaveChanges();
 
             return true;
@@ -157,30 +171,44 @@ namespace FleetCore.Services
                 {
                     repair.UserFinished = user;
                     repair.FinishAt = DateTime.Now;
+
+                    var log = new Log()
+                    {
+                        Content = $"[{user.FullName}] zakończył naprawę [{repair.Content}] w pojeździe [{repair.Vehicle.Plate}] Bonus: NIE",
+                        Date = repair.FinishAt
+                    };
+                    _dbContext.Logs.Add(log);
                     _dbContext.SaveChanges();
                     return true;
                 }
                 else
                 {
+                    repair.UserFinished = user;
+                    repair.FinishAt = DateTime.Now;
+
                     var bonus = new Bonus()
                     {
                         Content = $"Zakończenie naprawy: [{repair.Content}] Pojazd: [{repair.Vehicle.Plate}]",
                         User = user,
-                        CreatedAt = DateTime.Now
+                        CreatedAt = repair.FinishAt
                     };
                     _dbContext.Bonuses.Add(bonus);
-                    repair.UserFinished = user;
-                    repair.FinishAt = DateTime.Now;
+                    
+
+                    var log = new Log()
+                    {
+                        Content = $"[{user.FullName}] zakończył naprawę [{repair.Content}] w pojeździe [{repair.Vehicle.Plate}] Bonus: TAK",
+                        Date = repair.FinishAt
+                    };
+                    _dbContext.Logs.Add(log);
                     _dbContext.SaveChanges();
                     return true;
-                }
-                
+                }               
             }
         }
         public async Task<bool> CreateRefueling(CreateRefuelingModel model)
         {
             var user = _dbContext.Users.FirstOrDefault(x => x.Id.ToString().Equals(model.userId));
-
 
             var vehicle = _dbContext
                 .Vehicles
@@ -199,6 +227,13 @@ namespace FleetCore.Services
             vehicle.Mileage= model.Mileage;
             _dbContext.Update(vehicle);
             _dbContext.Refuelings.Add(refueling);
+
+            var log = new Log()
+            {
+                Content = $"[{user.FullName}] dodał tankowanie [{refueling.Quantity} L] do pojazdu [{refueling.Vehicle.Plate}]",
+                Date = refueling.CreatedAt
+            };
+            _dbContext.Logs.Add(log);
             _dbContext.SaveChanges();
 
             return true;

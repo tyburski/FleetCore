@@ -40,18 +40,19 @@ namespace FleetCore.Controllers
             return Ok();
         }
 
-        [HttpPut("{id}")]
-        public ActionResult Update([FromRoute] int id, [FromBody] UpdateVehicleModel model)
+        [HttpPost("update")]
+        public ActionResult Update([FromBody] UpdateVehicleModel model)
         {
-            var _id = _vehicleService.Update(id, model);
-            return Ok($"/api/vehicle/{_id}");
+            var result = _vehicleService.Update(model);
+            if (result is true) return Ok();
+            else return BadRequest();
         }
 
-        [HttpDelete("{id}")]
-        public ActionResult Delete([FromRoute] int id)
+        [HttpPost("delete")]
+        public ActionResult Delete([FromBody]string plate)
         {
-            var result = _vehicleService.Delete(id);
-            if (result == false) return BadRequest();
+            var result = _vehicleService.Delete(plate);
+            if (result is false) return BadRequest();
             else return NoContent();
         }
 

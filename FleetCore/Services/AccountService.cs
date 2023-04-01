@@ -11,7 +11,11 @@ namespace FleetCore.Services
         Dictionary<int, string> Authenticate(LoginModel model);
         Task<bool> Create(CreateUserModel model);
         IEnumerable<AppUser> GetAll();
+        IEnumerable<Log> GetLogs();
         Task<bool> ChangePassword(ChangePasswordModel model);
+        Task<bool> DeleteUser(string fullname);
+        Task<bool> ResetPassword(string fullname);
+        Task<bool> ChangeRole(string fullname);
     }
     public class AccountService : IAccountService
     {
@@ -79,6 +83,58 @@ namespace FleetCore.Services
             _dbContext.Update(user);
             _dbContext.SaveChanges();
             return true;
+        }
+        public async Task<bool> DeleteUser(string fullname)
+        {
+            var user = _dbContext.Users.FirstOrDefault(x=>x.FullName.Equals(fullname));
+            if(user is null) return false;
+            else
+            {
+                _dbContext.Remove(user);
+                _dbContext.SaveChanges();
+                return true;
+            }
+        }
+        public async Task<bool> ResetPassword(string fullname)
+        {
+            var user = _dbContext.Users.FirstOrDefault(x => x.FullName.Equals(fullname));
+            if (user is null) return false;
+            else
+            {
+                user.Password = "Prima123";
+                _dbContext.SaveChanges();
+                return true;
+            }
+        }
+
+        public async Task<bool> ChangeRole(string fullname)
+        {
+            var user = _dbContext.Users.FirstOrDefault(x => x.FullName.Equals(fullname));
+            if (user is null) return false;
+            else
+            {
+                if(user.Role.Equals("User"))
+                {
+                    user.Role = "Moderator";
+                }
+                else if(user.Role.Equals("Moderator"))
+                {
+                    user.Role = "User";
+                }
+
+                _dbContext.SaveChanges();
+                return true;
+            }
+        }
+
+        public IEnumerable<Log> GetLogs()
+        {
+            var oldDate = DateTime.Now.AddDays(-7);
+            var dates = _dbContext.Logs.Where(x => x.Date < oldDate);
+            _dbContext.Logs.RemoveRange(dates);
+            _dbContext.SaveChanges();
+
+            return _dbContext.Logs.OrderByDescending(x=>x.Date).ToList();
         }
         
     }

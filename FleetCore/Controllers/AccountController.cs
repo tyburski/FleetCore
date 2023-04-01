@@ -57,5 +57,32 @@ namespace FleetCore.Controllers
             if (_accountService.ChangePassword(model).Result is true) return Ok();
             else return BadRequest();
         }
+        [HttpPost("rpassword")]
+        public ActionResult ResetPassword([FromBody]string fullname)
+        {
+            var result = _accountService.ResetPassword(fullname);
+            if (result.Result is false) return BadRequest();
+            else return Ok();
+        }
+        [HttpPost("delete")]
+        public ActionResult Delete([FromBody] string fullname)
+        {
+            var result = _accountService.DeleteUser(fullname);
+            if (result.Result is false) return BadRequest();
+            else return NoContent();
+        }
+        [HttpPost("role")]
+        public ActionResult ChangeRole([FromBody] string fullname)
+        {
+            var result = _accountService.ChangeRole(fullname);
+            if (result.Result is false) return BadRequest();
+            else return Ok();
+        }
+
+        [HttpGet("getlogs")]
+        public ActionResult GetLogs()
+        {
+            return Ok(_accountService.GetLogs());
+        }
     }
 }
