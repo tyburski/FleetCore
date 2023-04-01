@@ -13,5 +13,9 @@
         public DateTime CreatedAt { get; set; }
 
         public DateTime? FinishAt { get; set; }
+
+        public AppUser? UserFinished { get; set; }
+
+
     }
 }

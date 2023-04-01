@@ -15,12 +15,13 @@ namespace FleetCore.Controllers
             _vehicleService = vehicleService;
         }
 
-        [HttpGet("{id}")]
-        public ActionResult GetById([FromRoute] int id)
+        [HttpPost("get")]
+        public ActionResult GetByPlate([FromBody]string plate)
         {
-            return Ok(_vehicleService.GetById(id));
+            var result = _vehicleService.GetByPlate(plate);
+            if (result is null) return NotFound();
+            else return Ok(result);
         }
-
         [HttpGet]
         public ActionResult GetAll()
         {
@@ -28,11 +29,15 @@ namespace FleetCore.Controllers
         }
 
         [HttpPost("create")]
-        public ActionResult Create([FromBody] CreateVehicleModel model)
+        public async Task<ActionResult> Create([FromBody] CreateVehicleModel model)
         {
-            var id = _vehicleService.Create(model);
+            var result = await _vehicleService.Create(model);
 
-            return Created($"/api/vehicle/{id}", null);
+            if(result is false)
+            {
+                return BadRequest();
+            }
+            return Ok();
         }
 
         [HttpPut("{id}")]
@@ -46,25 +51,40 @@ namespace FleetCore.Controllers
         public ActionResult Delete([FromRoute] int id)
         {
             var result = _vehicleService.Delete(id);
-            if (result == false) return NoContent();
+            if (result == false) return BadRequest();
+            else return NoContent();
+        }
+
+        [HttpPost("repair/create")]
+        public ActionResult CreateRepair([FromBody] CreateRepairModel model)
+        {
+            var result = _vehicleService.CreateRepair(model);
+            if (result.Result is false) return BadRequest();
             else return Ok();
         }
-
-        [HttpPost("{id}/event")]
-        public ActionResult CreateEvent([FromRoute]int id, [FromBody]CreateEventModel model)
+        [HttpPost("repair/finish")]
+        public ActionResult CreateRepair([FromBody] FinishRepairModel model)
         {
-            return Ok(_vehicleService.CreateEvent(id, model));
-        }
-
-        [HttpPost("{id}/repair")]
-        public ActionResult CreateRepair([FromRoute] int id, [FromBody] CreateRepairModel model)
-        {
-            return Ok(_vehicleService.CreateRepair(id, model));
+            var result = _vehicleService.FinishRepair(model);
+            if (result.Result is false) return BadRequest();
+            else return Ok();
         }
         [HttpPost("refueling")]
-        public ActionResult CreateRefueling([FromBody] CreateRefuelingModel model)
+        public ActionResult CreateRefueling([FromBody]CreateRefuelingModel model)
         {
-            return Ok(_vehicleService.CreateRefueling(model));
+            var result = _vehicleService.CreateRefueling(model);
+            if (result.Result is true)
+            {
+                return Ok();
+            }
+            else return BadRequest();
+        }
+        [HttpPost("event")]
+        public ActionResult UpdateEvent([FromBody]UpdateEventDate model)
+        {
+            var result = _vehicleService.UpdateEvent(model);
+            if (result.Result is true) return Ok();
+            else return BadRequest();
         }
     }
 }

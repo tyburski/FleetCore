@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FleetCore.Migrations
 {
     [DbContext(typeof(FleetCoreDbContext))]
-    [Migration("20230305083237_tokens")]
-    partial class tokens
+    [Migration("20230326170116_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -42,9 +42,6 @@ namespace FleetCore.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("OrganizationId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -61,8 +58,6 @@ namespace FleetCore.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OrganizationId");
 
                     b.HasIndex("VehicleId");
 
@@ -119,66 +114,25 @@ namespace FleetCore.Migrations
                     b.ToTable("Events");
                 });
 
-            modelBuilder.Entity("FleetCore.Models.Leave", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("LeaveDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Leaves");
-                });
-
-            modelBuilder.Entity("FleetCore.Models.Notice", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notices");
-                });
-
             modelBuilder.Entity("FleetCore.Models.Organization", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Address1")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("OrganizationPassword")
+                    b.Property<string>("Address2")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NIP")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -266,9 +220,6 @@ namespace FleetCore.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("OrganizationId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Plate")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -279,25 +230,15 @@ namespace FleetCore.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrganizationId");
-
                     b.ToTable("Vehicles");
                 });
 
             modelBuilder.Entity("FleetCore.Models.AppUser", b =>
                 {
-                    b.HasOne("FleetCore.Models.Organization", "Organization")
-                        .WithMany("Users")
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("FleetCore.Models.Vehicle", "Vehicle")
                         .WithMany("Users")
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Organization");
 
                     b.Navigation("Vehicle");
                 });
@@ -322,27 +263,6 @@ namespace FleetCore.Migrations
                         .IsRequired();
 
                     b.Navigation("Vehicle");
-                });
-
-            modelBuilder.Entity("FleetCore.Models.Leave", b =>
-                {
-                    b.HasOne("FleetCore.Models.AppUser", "User")
-                        .WithMany("Leaves")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("FleetCore.Models.Notice", b =>
-                {
-                    b.HasOne("FleetCore.Models.AppUser", "User")
-                        .WithMany("Notices")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("FleetCore.Models.Refueling", b =>
@@ -381,35 +301,13 @@ namespace FleetCore.Migrations
                     b.Navigation("Vehicle");
                 });
 
-            modelBuilder.Entity("FleetCore.Models.Vehicle", b =>
-                {
-                    b.HasOne("FleetCore.Models.Organization", "Organization")
-                        .WithMany("Vehicles")
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Organization");
-                });
-
             modelBuilder.Entity("FleetCore.Models.AppUser", b =>
                 {
                     b.Navigation("Bonuses");
 
-                    b.Navigation("Leaves");
-
-                    b.Navigation("Notices");
-
                     b.Navigation("Refuelings");
 
                     b.Navigation("Repairs");
-                });
-
-            modelBuilder.Entity("FleetCore.Models.Organization", b =>
-                {
-                    b.Navigation("Users");
-
-                    b.Navigation("Vehicles");
                 });
 
             modelBuilder.Entity("FleetCore.Models.Vehicle", b =>

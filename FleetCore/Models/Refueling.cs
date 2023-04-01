@@ -10,7 +10,7 @@
 
         public long Mileage { get; set; }
 
-        public int Quantity { get; set; }
+        public double Quantity { get; set; }
 
         public DateTime CreatedAt { get; set; }
     }

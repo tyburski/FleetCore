@@ -6,7 +6,9 @@
 
         public long Mileage { get; set; }
 
-        public int Quantity { get; set; }
+        public double Quantity { get; set; }
+
+        public string userId { get; set; }
 
     }
 }

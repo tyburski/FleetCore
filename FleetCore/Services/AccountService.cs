@@ -8,32 +8,48 @@ namespace FleetCore.Services
 {
     public interface IAccountService
     {
+        Dictionary<int, string> Authenticate(LoginModel model);
         Task<bool> Create(CreateUserModel model);
+        IEnumerable<AppUser> GetAll();
+        Task<bool> ChangePassword(ChangePasswordModel model);
     }
     public class AccountService : IAccountService
     {
         private readonly FleetCoreDbContext _dbContext;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AccountService(FleetCoreDbContext dbContext,
-            IHttpContextAccessor httpContextAccessor)
+        public AccountService(FleetCoreDbContext dbContext)
         {
             _dbContext = dbContext;
-            _httpContextAccessor = httpContextAccessor;
         }
+        public Dictionary<int, string> Authenticate(LoginModel model)
+        {
+            var user = _dbContext
+                .Users
+                .FirstOrDefault(x => x.UserName == model.UserName && x.Password == model.Password);
 
+            if (user is null)
+            {
+                return null;
+            }
+
+            Dictionary<int, string> datas = new Dictionary<int, string>
+                {
+                    { 0, user.FullName},
+                    { 1, user.Role },
+                    { 2, user.Id.ToString() }
+                };
+            return datas;
+
+        }
         public async Task<bool> Create(CreateUserModel model)
         {
-            var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentUser = _dbContext.Users.Include(x => x.Organization).FirstOrDefault(x => x.Id.Equals(userId));
-
             string username = ($"{model.FirstName.Substring(0, 1)}{model.LastName}").ToLower();
             var dbCheck = _dbContext
                 .Users
                 .FirstOrDefault(x=>x.UserName== username);
 
             bool registerSuccess = false;
-            if (dbCheck is null && currentUser is not null)
+            if (dbCheck is null)
             {
                 var user = new AppUser
                 {
@@ -42,13 +58,27 @@ namespace FleetCore.Services
                     LastName = model.LastName,
                     FullName = $"{model.FirstName} {model.LastName}",
                     Role = "User",
-                    Organization = currentUser.Organization,
-                    Password = currentUser.Organization.OrganizationPassword
+                    Password = "Prima123."
                 };
-
+                _dbContext.Users.Add(user);
+                _dbContext.SaveChanges();
                 registerSuccess = true;
             }
             return registerSuccess;
+        }
+        public IEnumerable<AppUser> GetAll()
+        {
+            return _dbContext.Users.ToList();
+        }
+        public async Task<bool> ChangePassword(ChangePasswordModel model)
+        {
+            var user = _dbContext.Users.FirstOrDefault(x => x.Id.ToString().Equals(model.userId));
+            if (user == null) return false;
+            
+            user.Password = model.Password;
+            _dbContext.Update(user);
+            _dbContext.SaveChanges();
+            return true;
         }
         
     }

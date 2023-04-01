@@ -39,7 +39,6 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
-builder.Services.AddScoped<INoticeService, NoticeService>();
 builder.Services.AddScoped<IBonusService, BonusService>();
 
 builder.Services.AddControllers().AddJsonOptions(x =>
@@ -66,4 +65,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+DataSeeder.Initialize(app);
 app.Run();

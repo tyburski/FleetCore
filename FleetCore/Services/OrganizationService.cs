@@ -8,12 +8,8 @@ namespace FleetCore.Services
 {
     public interface IOrganizationService
     {
-        bool Create(CreateOrganizationModel model);
-        IEnumerable<Organization> GetAll();
-        IEnumerable<Organization> GetByName(string search);
-        Organization GetById(string id);
-        Guid Update(string id, UpdateOrganizationModel model);
-        bool Delete(string id);
+        Task<bool>Update(UpdateOrganizationModel model);
+        Organization Get();
     }
     public class OrganizationService : IOrganizationService
     {
@@ -24,91 +20,26 @@ namespace FleetCore.Services
             _dbContext = dbContext;
         }
 
-        public bool Create(CreateOrganizationModel model)
+        public async Task<bool> Update(UpdateOrganizationModel model)
         {
-            string username = ($"{model.FirstName.Substring(0, 1)}{model.LastName}").ToLower();
-            var orgDbCheck = _dbContext
+            var organization = _dbContext
                 .Organizations
-                .FirstOrDefault(x => x.Name == model.Name);
-            var userDbCheck = _dbContext
-                .Users
-                .FirstOrDefault(x => x.UserName.Equals(username));
-
-            bool createSuccess = false;
-            if (userDbCheck is null && orgDbCheck is null)
+                .FirstOrDefault();
+            if(organization is not null)
             {
-                var organization = new Organization()
-                {
-                    Name = model.Name,
-                    OrganizationPassword = model.OrganizationPassword
-                };
-                _dbContext.Organizations.Add(organization);
-                var user = new AppUser
-                {
-                    UserName = username,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    FullName = $"{model.FirstName} {model.LastName}",
-                    Organization = organization,
-                    Password = organization.OrganizationPassword,
-                    Role = "Owner"
-                };
-                _dbContext.Users.Add(user);
-                _dbContext.SaveChanges();
+                organization.Name = model.Name;
+                organization.Address1 = model.Address1;
+                organization.Address2 = model.Address2;
+                organization.NIP = model.NIP;
 
-                createSuccess = true;
+               _dbContext.SaveChanges();
+                return true;
             }
-            return createSuccess;                    
+            return false;
         }
-        public IEnumerable<Organization> GetAll()
+        public Organization Get()
         {
-            var organizations = _dbContext
-                .Organizations
-                .Include(x => x.Users)
-                .Include(x => x.Vehicles)
-                .ToList();
-
-            return organizations;
-        }
-        public IEnumerable<Organization> GetByName(string search)
-        {
-            var organizations = _dbContext
-                .Organizations
-                .Include(x => x.Users)
-                .Include(x => x.Vehicles)
-                .Where(x=>x.Name.Contains(search))
-                .ToList();
-            return organizations;
-        }
-        public Organization GetById(string id)
-        {
-            var organization = _dbContext
-                .Organizations
-                .Include(x => x.Users)
-                .Include(x => x.Vehicles)
-                .FirstOrDefault(x => x.Id.Equals(id));
-            return organization;
-        }
-        public Guid Update(string id, UpdateOrganizationModel model)
-        {
-            var organization = _dbContext
-                .Organizations
-                .FirstOrDefault(x=>x.Id.Equals(id));
-            organization.Name = model.Name;
-            organization.OrganizationPassword = model.OrganizationPassword;
-
-            return organization.Id;
-        }
-        public bool Delete(string id)
-        {
-            var organization = _dbContext
-                .Organizations
-                .FirstOrDefault(x => x.Id.Equals(id));
-            if (organization == null) return false;
-
-            _dbContext.Organizations.Remove(organization);
-            _dbContext.SaveChanges();
-            return true;
+            return _dbContext.Organizations.First();
         }
     }
 

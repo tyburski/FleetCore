@@ -31,12 +31,31 @@ namespace FleetCore.Controllers
         [HttpPost("login")]
         public ActionResult Login([FromBody]LoginModel model)
         {
-            var result = _jWTManager.Authenticate(model);
+            var result = _accountService.Authenticate(model);
             if (result is null)
             {
                 return Unauthorized();
             }
             return Ok(result);
+        }
+        [HttpPost("validateToken")]
+        public ActionResult ValidateToken([FromBody]string token)
+        {
+            var result = _jWTManager.ValidateToken(token);
+
+            return Ok(result);
+        }
+        [HttpGet("getall")]
+        public ActionResult GetAll()
+        {
+            return Ok(_accountService.GetAll());
+            
+        }
+        [HttpPost("password")]
+        public ActionResult ChangePassword([FromBody]ChangePasswordModel model)
+        {
+            if (_accountService.ChangePassword(model).Result is true) return Ok();
+            else return BadRequest();
         }
     }
 }

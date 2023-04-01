@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace FleetCore.Migrations
 {
-    public partial class tokens : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -15,7 +15,9 @@ namespace FleetCore.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OrganizationPassword = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Address1 = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address2 = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NIP = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -31,18 +33,11 @@ namespace FleetCore.Migrations
                     Plate = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Mileage = table.Column<long>(type: "bigint", nullable: false),
                     VIN = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OrganizationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Vehicles", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Vehicles_Organizations_OrganizationId",
-                        column: x => x.OrganizationId,
-                        principalTable: "Organizations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -77,18 +72,11 @@ namespace FleetCore.Migrations
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    VehicleId = table.Column<int>(type: "int", nullable: true),
-                    OrganizationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    VehicleId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Users_Organizations_OrganizationId",
-                        column: x => x.OrganizationId,
-                        principalTable: "Organizations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Users_Vehicles_VehicleId",
                         column: x => x.VehicleId,
@@ -116,48 +104,6 @@ namespace FleetCore.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Leaves",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LeaveDate = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Leaves", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Leaves_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Notices",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notices", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Notices_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -229,16 +175,6 @@ namespace FleetCore.Migrations
                 column: "VehicleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Leaves_UserId",
-                table: "Leaves",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notices_UserId",
-                table: "Notices",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Refuelings_UserId",
                 table: "Refuelings",
                 column: "UserId");
@@ -259,19 +195,9 @@ namespace FleetCore.Migrations
                 column: "VehicleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_OrganizationId",
-                table: "Users",
-                column: "OrganizationId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Users_VehicleId",
                 table: "Users",
                 column: "VehicleId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Vehicles_OrganizationId",
-                table: "Vehicles",
-                column: "OrganizationId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -283,10 +209,7 @@ namespace FleetCore.Migrations
                 name: "Events");
 
             migrationBuilder.DropTable(
-                name: "Leaves");
-
-            migrationBuilder.DropTable(
-                name: "Notices");
+                name: "Organizations");
 
             migrationBuilder.DropTable(
                 name: "Refuelings");
@@ -299,9 +222,6 @@ namespace FleetCore.Migrations
 
             migrationBuilder.DropTable(
                 name: "Vehicles");
-
-            migrationBuilder.DropTable(
-                name: "Organizations");
         }
     }
 }

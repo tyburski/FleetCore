@@ -1,8 +1,8 @@
 ﻿namespace FleetCore.Models
 {
-    public class CreateBonusModel
+    public class ChangePasswordModel
     {
         public string userId { get; set; }
-        public string Content { get; set; }
+        public string Password { get; set; }
     }
 }

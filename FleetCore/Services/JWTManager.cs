@@ -1,6 +1,8 @@
 ﻿using FleetCore.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -9,7 +11,7 @@ namespace FleetCore.Services
 {
     public interface IJWTManager
     {
-        Tokens Authenticate(LoginModel model);
+        Dictionary<int, string>? ValidateToken(string token);
     }
     public class JWTManager : IJWTManager
     {
@@ -22,34 +24,44 @@ namespace FleetCore.Services
             _iconfiguration = iconfiguration;
             _dbContext = dbContext;
         }
-        public Tokens Authenticate(LoginModel model)
-        {
-            var user = _dbContext
-                .Users
-                .Include(x => x.Organization)
-                .FirstOrDefault(x => x.UserName == model.UserName && x.Password == model.Password);
 
-            if (user is null)
+        public Dictionary<int, string>? ValidateToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_iconfiguration["JWT:Key"]);
+            try
+            {
+                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = _iconfiguration["JWT:Issuer"],
+                    ValidAudience = _iconfiguration["JWT:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+
+                var jwtToken = (JwtSecurityToken)validatedToken;
+
+                var fullname = jwtToken.Claims.First(x => x.Type == "Name").Value;
+                var role = jwtToken.Claims.First(x => x.Type == "Role").Value;
+                var userId = jwtToken.Claims.First(x => x.Type == "UserId").Value;
+
+                Dictionary<int, string> datas = new Dictionary<int, string>
+                {
+                    { 0, fullname },
+                    { 1, role },
+                    { 2, userId }
+                };
+
+                return datas;
+            }
+            catch
             {
                 return null;
             }
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var tokenKey = Encoding.UTF8.GetBytes(_iconfiguration["JWT:Key"]);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                     new Claim(ClaimTypes.Name, user.FullName),
-                     new Claim(ClaimTypes.Role, user.Role),
-                     new Claim("Organization", user.Organization.Id.ToString())
-                }),
-                Expires = DateTime.UtcNow.AddDays(30),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return new Tokens { Token = tokenHandler.WriteToken(token) };
-
         }
     }
 }

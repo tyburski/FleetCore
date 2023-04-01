@@ -19,7 +19,5 @@
         public IEnumerable<Repair>? Repairs { get; set; }
 
         public IEnumerable<Refueling>? Refuelings { get; set; }
-
-        public Organization Organization { get; set; }
     }
 }

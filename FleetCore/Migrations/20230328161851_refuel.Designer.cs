@@ -4,6 +4,7 @@ using FleetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FleetCore.Migrations
 {
     [DbContext(typeof(FleetCoreDbContext))]
-    partial class FleetCoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230328161851_refuel")]
+    partial class refuel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -189,9 +191,6 @@ namespace FleetCore.Migrations
                     b.Property<DateTime?>("FinishAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("UserFinishedId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -199,8 +198,6 @@ namespace FleetCore.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UserFinishedId");
 
                     b.HasIndex("UserId");
 
@@ -288,11 +285,6 @@ namespace FleetCore.Migrations
 
             modelBuilder.Entity("FleetCore.Models.Repair", b =>
                 {
-                    b.HasOne("FleetCore.Models.AppUser", "UserFinished")
-                        .WithMany("FinishedRepairs")
-                        .HasForeignKey("UserFinishedId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("FleetCore.Models.AppUser", "User")
                         .WithMany("Repairs")
                         .HasForeignKey("UserId")
@@ -306,16 +298,12 @@ namespace FleetCore.Migrations
 
                     b.Navigation("User");
 
-                    b.Navigation("UserFinished");
-
                     b.Navigation("Vehicle");
                 });
 
             modelBuilder.Entity("FleetCore.Models.AppUser", b =>
                 {
                     b.Navigation("Bonuses");
-
-                    b.Navigation("FinishedRepairs");
 
                     b.Navigation("Refuelings");
 

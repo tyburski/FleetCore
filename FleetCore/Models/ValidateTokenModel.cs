@@ -1,8 +1,7 @@
 ﻿namespace FleetCore.Models
 {
-    public class Tokens
+    public class ValidateTokenModel
     {
         public string Token { get; set; }
-        public string RefreshToken { get; set; }
     }
 }

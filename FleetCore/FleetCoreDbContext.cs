@@ -12,8 +12,6 @@ namespace FleetCore
         public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<Bonus> Bonuses { get; set; }
         public DbSet<Event> Events { get; set; }
-        public DbSet<Leave> Leaves { get; set; }
-        public DbSet<Notice> Notices { get; set; }
         public DbSet<Refueling> Refuelings { get; set; }
         public DbSet<Repair> Repairs { get; set; }
 
@@ -27,20 +25,6 @@ namespace FleetCore
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<Organization>()
-                .HasMany(x=>x.Users)
-                .WithOne(x => x.Organization)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Organization>()
-                .HasMany(x => x.Vehicles)
-                .WithOne(x => x.Organization)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            
 
             modelBuilder.Entity<Vehicle>()
                 .HasMany(x => x.Events)
@@ -61,11 +45,6 @@ namespace FleetCore
                 .HasMany(x => x.Bonuses)
                 .WithOne(x => x.User)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<AppUser>()
-                .HasMany(x => x.Leaves)
-                .WithOne(x => x.User)
-                .OnDelete(DeleteBehavior.Cascade);
            
             modelBuilder.Entity<AppUser>()
                 .HasMany(x => x.Refuelings)
@@ -78,9 +57,9 @@ namespace FleetCore
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<AppUser>()
-                .HasMany(x => x.Notices)
-                .WithOne(x => x.User)
-                .OnDelete(DeleteBehavior.Restrict);
+               .HasMany(x => x.FinishedRepairs)
+               .WithOne(x => x.UserFinished)
+               .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<AppUser>()
                 .HasOne(x => x.Vehicle)
