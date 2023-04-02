@@ -4,6 +4,7 @@ using FleetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FleetCore.Migrations
 {
     [DbContext(typeof(FleetCoreDbContext))]
-    partial class FleetCoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230402091643_i222")]
+    partial class i222
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -130,31 +132,6 @@ namespace FleetCore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Logs");
-                });
-
-            modelBuilder.Entity("FleetCore.Models.Notice", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notices");
                 });
 
             modelBuilder.Entity("FleetCore.Models.Organization", b =>
@@ -313,17 +290,6 @@ namespace FleetCore.Migrations
                     b.Navigation("Vehicle");
                 });
 
-            modelBuilder.Entity("FleetCore.Models.Notice", b =>
-                {
-                    b.HasOne("FleetCore.Models.AppUser", "User")
-                        .WithMany("Notices")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("FleetCore.Models.Refueling", b =>
                 {
                     b.HasOne("FleetCore.Models.AppUser", "User")
@@ -373,8 +339,6 @@ namespace FleetCore.Migrations
                     b.Navigation("Bonuses");
 
                     b.Navigation("FinishedRepairs");
-
-                    b.Navigation("Notices");
 
                     b.Navigation("Refuelings");
 

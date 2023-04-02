@@ -10,6 +10,7 @@ namespace FleetCore.Services
     public interface IBonusService
     {
         Task<bool> Create(CreateBonusModel model);
+        IEnumerable<Bonus> GetAll(string fullname);
     }
     public class BonusService : IBonusService
     {
@@ -38,6 +39,16 @@ namespace FleetCore.Services
             return false;
             
             
+        }
+
+        public IEnumerable<Bonus> GetAll(string fullname)
+        {
+            var oldDate = DateTime.Now.AddMonths(-2);
+            var dates = _dbContext.Bonuses.Where(x => x.CreatedAt.Month <= oldDate.Month);
+            _dbContext.Bonuses.RemoveRange(dates);
+            _dbContext.SaveChanges();
+
+            return _dbContext.Bonuses.Where(x => x.User.FullName.Equals(fullname)).ToList();
         }
     }
 }

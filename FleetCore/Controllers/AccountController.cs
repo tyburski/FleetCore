@@ -10,12 +10,11 @@ namespace FleetCore.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
-        private readonly IJWTManager _jWTManager;
 
-        public AccountController(IAccountService accountService, IJWTManager jWTManager) 
+
+        public AccountController(IAccountService accountService) 
         {
             _accountService = accountService;
-            _jWTManager = jWTManager;
         }
         [HttpPost("create")]
         public ActionResult Create([FromBody]CreateUserModel model)
@@ -38,12 +37,12 @@ namespace FleetCore.Controllers
             }
             return Ok(result);
         }
-        [HttpPost("validateToken")]
-        public ActionResult ValidateToken([FromBody]string token)
+        [HttpPost("validate")]
+        public ActionResult Validate([FromBody]string userId)
         {
-            var result = _jWTManager.ValidateToken(token);
-
-            return Ok(result);
+            var result = _accountService.Validate(userId);
+            if (result.Result is true) return Ok();
+            else return BadRequest();
         }
         [HttpGet("getall")]
         public ActionResult GetAll()
@@ -83,6 +82,11 @@ namespace FleetCore.Controllers
         public ActionResult GetLogs()
         {
             return Ok(_accountService.GetLogs());
+        }
+        [HttpPost("getrefuelings")]
+        public ActionResult GetRefuelings([FromBody] string fullname)
+        {
+            return Ok(_accountService.GetRefuelings(fullname));
         }
     }
 }

@@ -47,6 +47,13 @@ namespace FleetCore.Controllers
             if (result is true) return Ok();
             else return BadRequest();
         }
+        [HttpPost("mileage")]
+        public ActionResult UpdateMileage([FromBody] UpdateMileageModel model)
+        {
+            var result = _vehicleService.UpdateMileage(model);
+            if (result is true) return Ok();
+            else return BadRequest();
+        }
 
         [HttpPost("delete")]
         public ActionResult Delete([FromBody]string plate)

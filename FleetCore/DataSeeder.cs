@@ -16,9 +16,9 @@ namespace FleetCore
                     Organization organization = new Organization()
                     {
                         Name = "PHU PRIMA",
-                        Address1 = "CHełm Śląski 111",
+                        Address1 = "Chełm Śląski123 ",
                         Address2 = "41-032 Chełm Śląski",
-                        NIP = "565765"
+                        NIP = "565765000"
                     };
                     AppUser user = new AppUser
                     {
@@ -27,7 +27,7 @@ namespace FleetCore
                         LastName = "Przewoźnik",
                         FullName = "Mariusz Przewoźnik",
                         Role = "Owner",
-                        Password = "Prima123."
+                        Password = BCrypt.Net.BCrypt.HashPassword("Prima123")
                     };
                     _dbContext.Organizations.Add(organization);
                     _dbContext.Users.Add(user);

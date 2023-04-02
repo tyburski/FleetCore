@@ -14,6 +14,7 @@ namespace FleetCore.Services
         IEnumerable<Vehicle> GetAll();
         Task<bool> Create(CreateVehicleModel model);
         bool Update(UpdateVehicleModel model);
+        bool UpdateMileage(UpdateMileageModel model);
         bool Delete(string plate);
         Task<bool> CreateRepair(CreateRepairModel model);
         Task<bool> FinishRepair(FinishRepairModel model);
@@ -115,6 +116,20 @@ namespace FleetCore.Services
             if (checkPlate is not null) return false;
 
             vehicle.Plate = model.newPlate;
+
+            _dbContext.SaveChanges();
+            return true;
+        }
+
+        public bool UpdateMileage(UpdateMileageModel model)
+        {
+            var vehicle = _dbContext
+                .Vehicles
+                .FirstOrDefault(x => x.Plate.Equals(model.Plate));
+            if (vehicle is null) return false;
+
+       
+            vehicle.Mileage = model.Mileage;
 
             _dbContext.SaveChanges();
             return true;

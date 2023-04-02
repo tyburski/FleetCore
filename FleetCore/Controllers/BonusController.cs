@@ -26,5 +26,11 @@ namespace FleetCore.Controllers
             }
             return BadRequest();            
         }
+
+        [HttpPost("get")]
+        public ActionResult GetAll([FromBody]string fullname)
+        {
+            return Ok(_bonusService.GetAll(fullname));
+        }
     }
 }

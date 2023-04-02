@@ -14,18 +14,30 @@ namespace FleetCore.Controllers
         {
             _organizationService = organizationService;
         }
-        [HttpPut("{id}")]
+        [HttpPost("update")]
         public ActionResult Update([FromBody]UpdateOrganizationModel model)
         {
-            return Ok(_organizationService.Update(model));
+            var result = _organizationService.Update(model);
+            if (result.Result is true) return Ok();
+            else return BadRequest();
         }
         [HttpGet("get")]
         public ActionResult Get()
         {
             return Ok(_organizationService.Get());
         }
+        [HttpPost("createnotice")]
+        public ActionResult CreateNotice([FromBody]CreateNoticeModel model)
+        {
+            var result = _organizationService.CreateNotice(model);
+            if (result.Result is false) return BadRequest();
+            else return Ok();
+        }
 
-
-
+        [HttpGet("getnotices")]
+        public ActionResult GetNotices()
+        {
+            return Ok(_organizationService.GetNotices());
+        }
     }
 }

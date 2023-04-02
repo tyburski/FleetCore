@@ -9,9 +9,11 @@ namespace FleetCore.Services
     public interface IAccountService
     {
         Dictionary<int, string> Authenticate(LoginModel model);
+        Task<bool> Validate(string userId);
         Task<bool> Create(CreateUserModel model);
         IEnumerable<AppUser> GetAll();
         IEnumerable<Log> GetLogs();
+        IEnumerable<Refueling> GetRefuelings(string fullname);
         Task<bool> ChangePassword(ChangePasswordModel model);
         Task<bool> DeleteUser(string fullname);
         Task<bool> ResetPassword(string fullname);
@@ -26,25 +28,36 @@ namespace FleetCore.Services
             _dbContext = dbContext;
         }
         public Dictionary<int, string> Authenticate(LoginModel model)
-        {
+        {          
             var user = _dbContext
                 .Users
-                .FirstOrDefault(x => x.UserName == model.UserName && x.Password == model.Password);
-
+                .FirstOrDefault(x => x.UserName == model.UserName);
             if (user is null)
             {
                 return null;
             }
 
-            Dictionary<int, string> datas = new Dictionary<int, string>
+            bool verified = BCrypt.Net.BCrypt.Verify(model.Password, user.Password);
+
+            if (!verified) return null;
+            else
+            {
+                Dictionary<int, string> datas = new Dictionary<int, string>
                 {
                     { 0, user.FullName},
                     { 1, user.Role },
                     { 2, user.Id.ToString() }
                 };
-            return datas;
-
+                return datas;
+            }
         }
+        public async Task<bool> Validate(string userId)
+        {
+            var user = _dbContext.Users.FirstOrDefault(x=>x.Id.ToString().Equals(userId));
+            if (user is null) return false;
+            else return true;
+        }
+
         public async Task<bool> Create(CreateUserModel model)
         {
             string username = ($"{model.FirstName.Substring(0, 1)}{model.LastName}").ToLower();
@@ -62,8 +75,8 @@ namespace FleetCore.Services
                     LastName = model.LastName,
                     FullName = $"{model.FirstName} {model.LastName}",
                     Role = "User",
-                    Password = "Prima123."
-                };
+                    Password = BCrypt.Net.BCrypt.HashPassword("Prima123")
+            };
                 _dbContext.Users.Add(user);
                 _dbContext.SaveChanges();
                 registerSuccess = true;
@@ -79,7 +92,7 @@ namespace FleetCore.Services
             var user = _dbContext.Users.FirstOrDefault(x => x.Id.ToString().Equals(model.userId));
             if (user == null) return false;
             
-            user.Password = model.Password;
+            user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
             _dbContext.Update(user);
             _dbContext.SaveChanges();
             return true;
@@ -101,7 +114,7 @@ namespace FleetCore.Services
             if (user is null) return false;
             else
             {
-                user.Password = "Prima123";
+                user.Password = BCrypt.Net.BCrypt.HashPassword("Prima123");
                 _dbContext.SaveChanges();
                 return true;
             }
@@ -135,6 +148,15 @@ namespace FleetCore.Services
             _dbContext.SaveChanges();
 
             return _dbContext.Logs.OrderByDescending(x=>x.Date).ToList();
+        }
+        public IEnumerable<Refueling> GetRefuelings(string fullname)
+        {
+            var oldDate = DateTime.Now.AddDays(-30);
+            var dates = _dbContext.Refuelings.Where(x => x.CreatedAt<oldDate);
+            _dbContext.Refuelings.RemoveRange(dates);
+            _dbContext.SaveChanges();
+
+            return _dbContext.Refuelings.Where(x => x.User.FullName.Equals(fullname)).Include(x=>x.Vehicle).ToList();
         }
         
     }
