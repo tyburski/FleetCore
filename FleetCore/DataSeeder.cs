@@ -15,19 +15,19 @@ namespace FleetCore
                 {
                     Organization organization = new Organization()
                     {
-                        Name = "PHU PRIMA",
-                        Address1 = "Chełm Śląski123 ",
-                        Address2 = "41-032 Chełm Śląski",
-                        NIP = "565765000"
+                        Name = "PHU TRANSPORT",
+                        Address1 = "ul.Zwierzyniecka 127",
+                        Address2 = "31-132 Kraków",
+                        NIP = "1060000062"
                     };
                     AppUser user = new AppUser
                     {
-                        UserName = "mprzewoznik",
-                        FirstName = "Mariusz",
-                        LastName = "Przewoźnik",
-                        FullName = "Mariusz Przewoźnik",
+                        UserName = "dtyburski",
+                        FirstName = "Dawid",
+                        LastName = "Tyburski",
+                        FullName = "Dawid Tyburski",
                         Role = "Owner",
-                        Password = BCrypt.Net.BCrypt.HashPassword("Prima123")
+                        Password = BCrypt.Net.BCrypt.HashPassword("FleetCore")
                     };
                     _dbContext.Organizations.Add(organization);
                     _dbContext.Users.Add(user);

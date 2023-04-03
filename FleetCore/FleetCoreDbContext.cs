@@ -18,10 +18,7 @@ namespace FleetCore
         public DbSet<Notice> Notices { get; set; }
 
         private string _connectionString =
-            "Data Source=mssql.webio.pl,2401;Database=dtyburski0_primasystem;Uid=dtyburski0_dataBaseUser;Password=@r:3Z^49Ta[)YI8$.517tX0/VOCh;TrustServerCertificate=True";
-
-        //@r:3Z^49Ta[)YI8$.517tX0/VOCh
-        //"Data Source=mssql.webio.pl,2401;Database=dtyburski0_primasystem;Uid=dtyburski0_dataBaseUser;Password=@r:3Z^49Ta[)YI8$.517tX0/VOCh;TrustServerCertificate=True"
+            ".";
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -66,10 +63,6 @@ namespace FleetCore
                .WithOne(x => x.UserFinished)
                .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<AppUser>()
-                .HasOne(x => x.Vehicle)
-                .WithMany(x => x.Users)
-                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<AppUser>()
                .HasMany(x => x.Notices)
                .WithOne(x => x.User)

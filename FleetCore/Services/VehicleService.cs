@@ -260,8 +260,8 @@ namespace FleetCore.Services
             if(ev is null) return false;
             else
             {
-                var dateConverted = DateTime.Parse(model.Date);
-                ev.Date = dateConverted;
+                var date = model.Date;
+                ev.Date = date;
                 _dbContext.SaveChanges();
                 return true;
             }

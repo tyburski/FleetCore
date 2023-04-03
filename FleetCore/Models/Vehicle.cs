@@ -10,9 +10,6 @@
 
         public string VIN { get; set; }
 
-        public string? Note { get; set; }
-
-        public IEnumerable<AppUser>? Users { get; set; }
 
         public IEnumerable<Event>? Events { get; set; }
 

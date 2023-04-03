@@ -75,7 +75,7 @@ namespace FleetCore.Services
                     LastName = model.LastName,
                     FullName = $"{model.FirstName} {model.LastName}",
                     Role = "User",
-                    Password = BCrypt.Net.BCrypt.HashPassword("Prima123")
+                    Password = BCrypt.Net.BCrypt.HashPassword("FleetCore")
             };
                 _dbContext.Users.Add(user);
                 _dbContext.SaveChanges();
@@ -114,7 +114,7 @@ namespace FleetCore.Services
             if (user is null) return false;
             else
             {
-                user.Password = BCrypt.Net.BCrypt.HashPassword("Prima123");
+                user.Password = BCrypt.Net.BCrypt.HashPassword("FleetCore");
                 _dbContext.SaveChanges();
                 return true;
             }

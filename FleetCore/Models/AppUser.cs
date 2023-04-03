@@ -6,9 +6,9 @@ namespace FleetCore.Models
     {
         public Guid Id { get; set; }
 
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
 
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         public string FirstName { get; set; }
 
@@ -17,8 +17,6 @@ namespace FleetCore.Models
         public string FullName { get; set; }
 
         public string Role { get; set; }
-
-        public Vehicle? Vehicle { get; set; }
 
         public IEnumerable<Bonus>? Bonuses { get; set; }
 
